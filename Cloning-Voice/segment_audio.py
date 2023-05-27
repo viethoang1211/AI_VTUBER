@@ -31,6 +31,6 @@ def segment_audio(audio_path, clip_duration, output_dir):
 # Example usage
 audio_path = "data/train/lopi_see_london.wav"
 clip_duration = 10  # Duration of each clip in seconds
-output_dir = "data/train_segment"
+output_dir = "data/train_segment/lopi_see_london"
 
 segment_audio(audio_path, clip_duration, output_dir)
