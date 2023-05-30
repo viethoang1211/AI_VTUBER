@@ -1,0 +1,10 @@
+voicevox
+recording.wav
+*.tmp
+test.wav
+.env
+
+node_modules/
+
+ffmpeg.exe
+ffprobe.exe
