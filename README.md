@@ -5,4 +5,5 @@ Final vtuber to do:
 + combine listen to speech and read chat
 + can do command like open youtube, open chrome, exit,...
 + voice clone instead of eleven lab
++ virtual camera, mouth pose
 
