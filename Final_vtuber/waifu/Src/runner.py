@@ -1,5 +1,5 @@
 from colorama import *
-import openai, humanize, os, sys, time, threading, asyncio, signal, json
+import openai, humanize, os, sys, time, threading, asyncio, signal, json, webbrowser
 from rich.console import Console
 
 # If user didn't rename example.env
@@ -142,10 +142,33 @@ while True:
     print('\r' + ' ' * len(tanscribing_log), end="")
     print("\rYou" + Fore.GREEN + Style.BRIGHT + " (mic) " + Fore.RESET + "> ", end="", flush=True)
 
+    # print("gotta check here..."+"\n")
     print(f"{transcript.strip()}")    
 
-    utils.characterAi.send_message_to_process_via_websocket(transcript)
-    semaphore.acquire()
+    words= transcript.strip()
+    words = words.replace(".", "")
+    words = words.lower()
+    words = words.split()
+    
+    # print(words.index("open"))
+    if any(word in ["open", "start"] for word in words):
+        word_index = words.index("open") if "open" in words else words.index("start")
+        app = words[word_index + 1]
+        # print(app)
+        character_replied("okie")
+        semaphore.acquire()
+        if app == "youtube":
+            webbrowser.open("https://www.youtube.com/")
+        elif app == "facebook":
+            webbrowser.open("https://www.facebook.com/")
+        elif app== "code":
+            os.startfile(r"C:\Users\ADMIN\AppData\Local\Programs\Microsoft VS Code\Code.exe")
+        # implement whatever you want here
+        else:
+            pass
+    else:    
+        utils.characterAi.send_message_to_process_via_websocket(transcript)
+        semaphore.acquire()
 
     # After use delete recording.
     try:
