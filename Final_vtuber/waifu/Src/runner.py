@@ -95,7 +95,11 @@ def character_replied(raw_message):
     # print(raw_message)
 
     if voice == "elevenlabs":
-        utils.elevenlabs.speak(voice_message)
+        try:
+            utils.elevenlabs.speak(voice_message)
+        except Exception as e:
+            audio_path = utils.speech.silero_tts(voice_message)
+            utils.audio.play_wav(audio_path, utils.vtube_studio.set_audio_level)
     elif voice == "voicevox":
         if json.loads(os.environ.get("TRANSLATE_TO_JP", "False").lower()):
             message_jp = utils.translator.translate_to_jp(voice_message)
@@ -155,17 +159,27 @@ while True:
         word_index = words.index("open") if "open" in words else words.index("start")
         app = words[word_index + 1]
         # print(app)
-        character_replied("okie")
-        semaphore.acquire()
+
         if app == "youtube":
+            character_replied("okie")
+            semaphore.acquire()
             webbrowser.open("https://www.youtube.com/")
         elif app == "facebook":
+            character_replied("okie")
+            semaphore.acquire()
             webbrowser.open("https://www.facebook.com/")
+        elif app == "github":
+            character_replied("okie")
+            semaphore.acquire()
+            webbrowser.open("https://www.github.com/")
         elif app== "code":
+            character_replied("okie")
+            semaphore.acquire()
             os.startfile(r"C:\Users\ADMIN\AppData\Local\Programs\Microsoft VS Code\Code.exe")
         # implement whatever you want here
         else:
-            pass
+            utils.characterAi.send_message_to_process_via_websocket(transcript)
+            semaphore.acquire()
     else:    
         utils.characterAi.send_message_to_process_via_websocket(transcript)
         semaphore.acquire()

@@ -37,12 +37,14 @@ echo Installing dependencies...
 
 call npm install ./character_ai/
 
-@REM python -m ensurepip
-@REM python -m pip install --upgrade pip
-@REM python -m pip install pipwin 
+python -m ensurepip
+python -m pip install --upgrade pip
+python -m pip install pipwin 
 rem we have to use pipwin for installing pyaudio
-@REM python -m pipwin install pyaudio 
-@REM python -m pip install -r requirements.txt 
+python -m pipwin install pyaudio 
+python -m pip install -r requirements.txt 
+
+
 cls
 
 python waifu/Src/runner.py
