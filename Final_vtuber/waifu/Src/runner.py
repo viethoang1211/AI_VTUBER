@@ -54,6 +54,14 @@ import utils.punctuation_fixer
 
 voice = os.environ.get("VOICE") 
 
+# Variable for youtube live
+
+
+
+
+# End
+
+
 utils.dependencies.start_check(voice)
 
 if voice == "elevenlabs":
