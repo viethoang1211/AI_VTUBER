@@ -54,13 +54,6 @@ import utils.punctuation_fixer
 
 voice = os.environ.get("VOICE") 
 
-# Variable for youtube live
-
-
-
-
-# End
-
 
 utils.dependencies.start_check(voice)
 
@@ -125,77 +118,252 @@ def character_replied(raw_message):
     semaphore.release()
 
 utils.characterAi.reply_callback = character_replied
-# Main process loop
-while True: 
-
-    print(Style.RESET_ALL + Fore.RESET, end="")
-
-    print("You" + Fore.GREEN + Style.BRIGHT + " (mic) " + Fore.RESET + ">", end="", flush=True)
-
-    # Wait for audio input
-    utils.hotkeys.audio_input_await()
-
-    print("\rYou" + Fore.GREEN + Style.BRIGHT + " (mic " + Fore.YELLOW + "[Recording]" + Fore.GREEN +") " + Fore.RESET + ">", end="", flush=True)
-
-    audio_buffer = utils.audio.record()
-
-    # We need to keep track of the length of this message
-    # because in Python we have no way to clear an entire line, wtf.
-    try:
-        tanscribing_log = "\rYou" + Fore.GREEN + Style.BRIGHT + " (mic " + Fore.BLUE + "[Transcribing (" + str(humanize.naturalsize(os.path.getsize(audio_buffer))) + ")]" + Fore.GREEN +") " + Fore.RESET + "> "
-        print(tanscribing_log, end="", flush=True)
-        transcript = utils.transcriber.transcribe(audio_buffer)
-    except Exception as e:
-        print(Fore.RED + Style.BRIGHT + "Error: " + str(e))
-        continue
 
 
-    # Clear the last line.
-    print('\r' + ' ' * len(tanscribing_log), end="")
-    print("\rYou" + Fore.GREEN + Style.BRIGHT + " (mic) " + Fore.RESET + "> ", end="", flush=True)
+# Variable for youtube live
 
-    # print("gotta check here..."+"\n")
-    print(f"{transcript.strip()}")    
+chat =""
+chat_now=""
+chat_prev=""
+owner_name="nova"
+blacklist= ["Currently","testing"]
 
-    words= transcript.strip()
-    words = words.replace(".", "")
-    words = words.lower()
-    words = words.split()
+# End
+
+# function for youtube live
+import re
+import pytchat
+
+def yt_livechat(video_id):
+        global chat
+
+        live = pytchat.create(video_id=video_id)
+        while live.is_alive():
+        # while True:
+            try:
+                for c in live.get().sync_items():
+                    # Ignore chat from the streamer and Nightbot, change this if you want to include the streamer's chat
+                    # if c.author.name in blacklist:
+                    #     continue
+                    # if not c.message.startswith("!") and c.message.startswith('#'):
+                    if not c.message.startswith("!"):
+                        # Remove emojis from the chat
+                        chat_raw = re.sub(r':[^\s]+:', '', c.message)
+                        chat_raw = chat_raw.replace('#', '')
+                        # chat_author makes the chat look like this: "Nightbot: Hello". So the assistant can respond to the user's name
+                        chat = 'reply to: \" ' + c.author.name + ': ' + chat_raw + ' \"'
+                        print(chat)
+                        
+                    time.sleep(1)
+            except Exception as e:
+                print("Error receiving chat: {0}".format(e))
+
+semaphore_yt= threading.Semaphore(1)
+
+def preparation():
+    global chat_now, chat, chat_prev
+    while True:
+        # If the assistant is not speaking, and the chat is not empty, and the chat is not the same as the previous chat
+        # then the assistant will answer the chat
+        semaphore_yt.acquire()
+        chat_now = chat
+        if chat_now != chat_prev:
+        # if is_Speaking == False and chat_now != chat_prev:
+            # Saving chat history
+            # conversation.append({'role': 'user', 'content': chat_now})
+            chat_prev = chat_now
+            # openai_answer()
+            message = chat_now
+            utils.characterAi.send_message_to_process_via_websocket(message)
+            semaphore.acquire()         
+
+        time.sleep(1)
+        semaphore_yt.release()
     
-    # print(words.index("open"))
-    if any(word in ["open", "start"] for word in words):
-        word_index = words.index("open") if "open" in words else words.index("start")
-        app = words[word_index + 1]
-        # print(app)
+# end function for youtube live
 
-        if app == "youtube":
-            character_replied("okie")
-            semaphore.acquire()
-            webbrowser.open("https://www.youtube.com/")
-        elif app == "facebook":
-            character_replied("okie")
-            semaphore.acquire()
-            webbrowser.open("https://www.facebook.com/")
-        elif app == "github":
-            character_replied("okie")
-            semaphore.acquire()
-            webbrowser.open("https://www.github.com/")
-        elif app== "code":
-            character_replied("okie")
-            semaphore.acquire()
-            os.startfile(r"C:\Users\ADMIN\AppData\Local\Programs\Microsoft VS Code\Code.exe")
-        # implement whatever you want here
-        else:
-            utils.characterAi.send_message_to_process_via_websocket(transcript)
-            semaphore.acquire()
-    else:    
-        utils.characterAi.send_message_to_process_via_websocket(transcript)
-        semaphore.acquire()
+# function for mode 3
+import speech_recognition as sr
+semaphore1 = threading.Semaphore(1)
 
-    # After use delete recording.
-    try:
-        # This causes ``[WinError 32] The process cannot access the file because it is being used by another process`` sometimes.
-        # I don't know why.
-        os.remove(audio_buffer)
-    except:
-        pass
+speech=""
+speech_now=""
+speech_prev=""
+
+def listen_and_respond():
+    # Create a recognizer object
+    global speech 
+    r = sr.Recognizer()
+    
+    # Use the default microphone as the audio source
+    with sr.Microphone() as source:
+        print("Say something...")
+        
+        while True:
+            # Listen for audio input
+            print("waiting for input...")
+            semaphore1.acquire()
+            audio = r.listen(source,phrase_time_limit=15)
+            
+            print("recieved audio:")
+            # try:
+                # Use the recognizer to convert speech to text
+                
+            text = r.recognize_sphinx(audio)
+            if len(text) <= 15:
+                semaphore1.release()
+                continue
+            else:
+                pass
+            
+            with open("temp.wav", "wb") as f:
+                f.write(audio.get_wav_data())
+            
+            # print("You said: " + text)
+            # print("I heard that.")
+            
+            audio_file= open("temp.wav", "rb")
+            trans = openai.Audio.transcribe(
+                model="whisper-1",
+                file=audio_file,
+                temperature=0.1,
+                language="en"
+            )
+
+            if len(trans['text']) <=15:
+                semaphore1.release()
+                continue
+            else:
+                pass
+            
+            # print("You: " + trans['text'])
+            speech = trans['text']
+            semaphore1.release()
+
+def preparation_1():
+    global chat_now, chat, chat_prev,speech, speech_now,speech_prev
+    while True:
+        # If the assistant is not speaking, and the chat is not empty, and the chat is not the same as the previous chat
+        # then the assistant will answer the chat
+        semaphore_yt.acquire()
+        chat_now = chat
+        speech_now=speech
+        semaphore1.acquire()
+        if speech_now!= speech_prev:
+            speech_prev = speech_now
+            # openai_answer()
+            message = speech_now
+            utils.characterAi.send_message_to_process_via_websocket(message)
+            semaphore.acquire() 
+        else: 
+            if chat_now != chat_prev:
+            # if is_Speaking == False and chat_now != chat_prev:
+                # Saving chat history
+                # conversation.append({'role': 'user', 'content': chat_now})
+                chat_prev = chat_now
+                # openai_answer()
+                message = chat_now
+                utils.characterAi.send_message_to_process_via_websocket(message)
+                semaphore.acquire()         
+        semaphore1.release()
+        time.sleep(1)
+        semaphore_yt.release()
+
+# end function
+
+if  __name__ == "__main__":
+
+    mode = input("Mode (1-Mic, 2-Youtube Live, 3-Live and listen): ")
+
+    if mode =="1":
+        print("Hold right ctrl and right shift to record audio")
+        # Main process loop
+        while True: 
+
+            print(Style.RESET_ALL + Fore.RESET, end="")
+
+            print("You" + Fore.GREEN + Style.BRIGHT + " (mic) " + Fore.RESET + ">", end="", flush=True)
+
+            # Wait for audio input
+            utils.hotkeys.audio_input_await()
+
+            print("\rYou" + Fore.GREEN + Style.BRIGHT + " (mic " + Fore.YELLOW + "[Recording]" + Fore.GREEN +") " + Fore.RESET + ">", end="", flush=True)
+
+            audio_buffer = utils.audio.record()
+
+            # We need to keep track of the length of this message
+            # because in Python we have no way to clear an entire line, wtf.
+            try:
+                tanscribing_log = "\rYou" + Fore.GREEN + Style.BRIGHT + " (mic " + Fore.BLUE + "[Transcribing (" + str(humanize.naturalsize(os.path.getsize(audio_buffer))) + ")]" + Fore.GREEN +") " + Fore.RESET + "> "
+                print(tanscribing_log, end="", flush=True)
+                transcript = utils.transcriber.transcribe(audio_buffer)
+            except Exception as e:
+                print(Fore.RED + Style.BRIGHT + "Error: " + str(e))
+                continue
+
+
+            # Clear the last line.
+            print('\r' + ' ' * len(tanscribing_log), end="")
+            print("\rYou" + Fore.GREEN + Style.BRIGHT + " (mic) " + Fore.RESET + "> ", end="", flush=True)
+
+            # print("gotta check here..."+"\n")
+            print(f"{transcript.strip()}")    
+
+            words= transcript.strip()
+            words = words.replace(".", "")
+            words = words.lower()
+            words = words.split()
+            
+            # print(words.index("open"))
+            if any(word in ["open", "start"] for word in words):
+                word_index = words.index("open") if "open" in words else words.index("start")
+                app = words[word_index + 1]
+                # print(app)
+
+                if app == "youtube":
+                    character_replied("okie")
+                    semaphore.acquire()
+                    webbrowser.open("https://www.youtube.com/")
+                elif app == "facebook":
+                    character_replied("okie")
+                    semaphore.acquire()
+                    webbrowser.open("https://www.facebook.com/")
+                elif app == "github":
+                    character_replied("okie")
+                    semaphore.acquire()
+                    webbrowser.open("https://www.github.com/")
+                elif app== "code":
+                    character_replied("okie")
+                    semaphore.acquire()
+                    os.startfile(r"C:\Users\ADMIN\AppData\Local\Programs\Microsoft VS Code\Code.exe")
+                # implement whatever you want here
+                else:
+                    utils.characterAi.send_message_to_process_via_websocket(transcript)
+                    semaphore.acquire()
+            else:    
+                utils.characterAi.send_message_to_process_via_websocket(transcript)
+                semaphore.acquire()
+
+            # After use delete recording.
+            try:
+                # This causes ``[WinError 32] The process cannot access the file because it is being used by another process`` sometimes.
+                # I don't know why.
+                os.remove(audio_buffer)
+            except:
+                pass
+
+    elif mode =="2":
+        live_id = input("Livestream ID: ")
+        # Threading is used to capture livechat and answer the chat at the same time
+        t = threading.Thread(target=preparation)
+        t.start()
+        yt_livechat(live_id)
+    elif mode =="3":
+        live_id = input("Livestream ID: ")
+        t = threading.Thread(target=preparation_1)
+        t.start()
+        t2= threading.Thread(target=listen_and_respond)
+        t2.start()
+        yt_livechat(live_id)        
+    else:
+        print("Invalid mode")

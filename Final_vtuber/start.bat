@@ -43,7 +43,8 @@ python -m pip install pipwin
 rem we have to use pipwin for installing pyaudio
 python -m pipwin install pyaudio 
 python -m pip install -r requirements.txt 
-
+python -m pip install SpeechRecognition
+python -m pip install pocketsphinx
 
 cls
 
