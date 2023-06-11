@@ -12,7 +12,8 @@ reply_callback = None
 def on_message(ws, message):
     if os.environ.get("CHARACTERAI_LOG") == "True":
         print(f"{Style.DIM}characterAI message: {message}")
-    reply_callback(message)
+    # reply_callback(message)
+    asyncio.run(reply_callback(message))
     # print(f"recieved message {message}")
 
 def on_close(ws):

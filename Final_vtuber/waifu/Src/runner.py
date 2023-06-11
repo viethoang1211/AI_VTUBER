@@ -1,6 +1,7 @@
 from colorama import *
-import openai, humanize, os, sys, time, threading, asyncio, signal, json, webbrowser
+import openai, humanize, os, sys, time, threading, asyncio, signal, json, webbrowser,edge_tts,sounddevice as sd,soundfile as sf, asyncio,torch 
 from rich.console import Console
+import whisper
 
 # If user didn't rename example.env
 if os.path.exists("example.env") and not os.path.exists(".env"):
@@ -52,8 +53,8 @@ import utils.translator
 import utils.speech
 import utils.punctuation_fixer
 
-voice = os.environ.get("VOICE") 
 
+voice = os.environ.get("VOICE") 
 
 utils.dependencies.start_check(voice)
 
@@ -62,6 +63,8 @@ if voice == "elevenlabs":
 elif voice == "voicevox":
     import utils.voicevox
     utils.voicevox.run_async()
+elif voice == "edge":
+    import utils.voice_const
 
 from rich.markdown import Markdown
 
@@ -81,9 +84,12 @@ semaphore = threading.Semaphore(0)
 console = Console()
 
 
+# import model
+
+
 # We need to wait for this to end until the next
 # input.
-def character_replied(raw_message):
+async def character_replied(raw_message):
     print(f"{Style.DIM}raw message: {raw_message}")
     print(f"\r{Style.RESET_ALL + Style.BRIGHT + Fore.YELLOW}Character {Fore.RESET + Style.RESET_ALL}> ", end="")
     
@@ -111,6 +117,13 @@ def character_replied(raw_message):
         if json.loads(os.environ.get("TTS_EN", "False").lower()):
             audio_path = utils.speech.silero_tts(voice_message)
             utils.audio.play_wav(audio_path, utils.vtube_studio.set_audio_level)
+    elif voice == "edge":
+        
+        OUTPUT_EDGE= "edge_output.mp3"
+        communicate = edge_tts.Communicate(raw_message, utils.voice_const.VOICE_FE_EN)
+        await communicate.save(OUTPUT_EDGE)
+        utils.audio.play_mp3(OUTPUT_EDGE, utils.vtube_studio.set_audio_level)
+        
 
     # Set mouth to resting point
     utils.vtube_studio.set_audio_level(0)
@@ -194,6 +207,7 @@ def listen_and_respond():
     # Create a recognizer object
     global speech 
     r = sr.Recognizer()
+    r.energy_threshold = 3000
     
     # Use the default microphone as the audio source
     with sr.Microphone() as source:
@@ -203,7 +217,7 @@ def listen_and_respond():
             # Listen for audio input
             print("waiting for input...")
             semaphore1.acquire()
-            audio = r.listen(source,phrase_time_limit=15)
+            audio = r.listen(source,phrase_time_limit=7)
             
             print("recieved audio:")
             # try:
@@ -222,6 +236,7 @@ def listen_and_respond():
             # print("You said: " + text)
             # print("I heard that.")
             
+            # for openai key 
             audio_file= open("temp.wav", "rb")
             trans = openai.Audio.transcribe(
                 model="whisper-1",
@@ -229,6 +244,11 @@ def listen_and_respond():
                 temperature=0.1,
                 language="en"
             )
+
+            # for non openai key
+            # result = utils.transcriber.audio_model.transcribe("temp.wav", fp16=torch.cuda.is_available())
+            # trans = result['text'].strip()
+
 
             if len(trans['text']) <=15:
                 semaphore1.release()
@@ -310,11 +330,14 @@ if  __name__ == "__main__":
             print(f"{transcript.strip()}")    
 
             words= transcript.strip()
+            words= words.replace("?","")
+            words= words.replace("!","")
             words = words.replace(".", "")
             words = words.lower()
             words = words.split()
             
             # print(words.index("open"))
+
             if any(word in ["open", "start"] for word in words):
                 word_index = words.index("open") if "open" in words else words.index("start")
                 app = words[word_index + 1]
@@ -337,6 +360,37 @@ if  __name__ == "__main__":
                     semaphore.acquire()
                     os.startfile(r"C:\Users\ADMIN\AppData\Local\Programs\Microsoft VS Code\Code.exe")
                 # implement whatever you want here
+                else:
+                    utils.characterAi.send_message_to_process_via_websocket(transcript)
+                    semaphore.acquire()
+            elif any(word in ["sing"] for word in words):
+                word_index = words.index("sing")
+                song = ' '.join(words[word_index+1:])
+                if "count on me" in song:
+                    asyncio.run(character_replied("okie"))
+                    time.sleep(2)
+                    utils.audio.play_wav('song/countonme_yuka.wav', utils.vtube_studio.set_audio_level)
+                    utils.vtube_studio.set_audio_level(0)
+                    pass
+                elif "jingle bell" in song:
+                    pass
+                elif "happy birthday" in song:
+                    asyncio.run(character_replied("okie"))
+                    time.sleep(2)
+                    utils.audio.play_wav('song/happybirthday_yuka.wav', utils.vtube_studio.set_audio_level)
+                    utils.vtube_studio.set_audio_level(0)
+                else:
+                    utils.characterAi.send_message_to_process_via_websocket(transcript)
+                    semaphore.acquire()
+
+            elif any(word in ["rap"] for word in words):
+                word_index = words.index("rap")
+                song = words[word_index+1]
+                if song =="god":
+                    asyncio.run(character_replied("rap god"))
+                    time.sleep(1)
+                    utils.audio.play_wav('song/rapgod_yuka.wav', utils.vtube_studio.set_audio_level)
+                    utils.vtube_studio.set_audio_level(0)
                 else:
                     utils.characterAi.send_message_to_process_via_websocket(transcript)
                     semaphore.acquire()

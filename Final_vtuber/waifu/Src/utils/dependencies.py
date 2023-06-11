@@ -64,6 +64,9 @@ def start_check(voice):
 
 required_variables = ["CHARACTERAI_CHARACTER", "OPENAI_KEY", "TORCH_DEVICE", "VOICE"]
 
+# for non openai key
+# required_variables = ["CHARACTERAI_CHARACTER", "TORCH_DEVICE", "VOICE"]
+
 # Check variables
 for i in required_variables:
     if not os.environ.get(i) or not os.environ.get(i).strip():

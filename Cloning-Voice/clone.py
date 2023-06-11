@@ -4,7 +4,7 @@ import subprocess
 import soundfile as sf
 import pydub
 import numpy as np
-import noisereduce as nr
+# import noisereduce as nr
 def collect_training_data(youtube_link, output_folder):
     # TODO: Implement data collection from YouTube video
     # pass
@@ -14,6 +14,8 @@ def collect_training_data(youtube_link, output_folder):
     # Extract audio from YouTube video using youtube-dl
     # command = ['youtube-dl', '--extract-audio', '--audio-format', 'wav', '-o', f'{output_folder}/%(id)s.%(ext)s', youtube_link]
     command = ['yt-dlp', '-o', f'{output_folder}/%(title)s.%(ext)s','-x','--audio-format','wav', youtube_link]
+    # command = ['yt-dlp', '-o', f'{output_folder}/%(title)s.%(ext)s', youtube_link]
+
     subprocess.call(command)
 
     print("Training data collected successfully.")

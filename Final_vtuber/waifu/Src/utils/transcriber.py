@@ -1,16 +1,27 @@
 import utils.audio
 import utils.vtube_studio
 
-import openai, requests, urllib, os, wave, io
+import openai, requests, urllib, os, wave, io,torch,whisper
 
 VOICEVOX_URL = os.environ.get("VOICEVOX_URL")
 
+# for non openai key
+# model= "medium.en"
+# audio_model = whisper.load_model(model)
+# end
+
+
+print("model loaded successfully")
 VOICEVOX_LOCAL_FILE = "test.wav"
 def transcribe(filename):
     audio = open(filename, "rb")
+    # for non openai key
+    # result = audio_model.transcribe(filename, fp16=torch.cuda.is_available())
+    # transcript = result['text'].strip()
+    # message=transcript
 
+    #  for openai key
     transcript = openai.Audio.transcribe("whisper-1", audio)
-
     message = transcript.text
 
     if message is None or len(message.strip()) == 0:

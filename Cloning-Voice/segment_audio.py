@@ -29,8 +29,8 @@ def segment_audio(audio_path, clip_duration, output_dir):
     print("Audio segmentation completed.")
 
 # Example usage
-audio_path = "data/train/lopi_see_london.wav"
-clip_duration = 10  # Duration of each clip in seconds
-output_dir = "data/train_segment/lopi_see_london"
+audio_path = "vocals.wav"
+clip_duration = 20  # Duration of each clip in seconds
+output_dir = "data/train_segment/countonme"
 
 segment_audio(audio_path, clip_duration, output_dir)
