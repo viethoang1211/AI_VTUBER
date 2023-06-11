@@ -43,12 +43,12 @@ call npm install ./character_ai/
 @REM rem we have to use pipwin for installing pyaudio
 @REM python -m pipwin install pyaudio 
 @REM python -m pip install -r requirements.txt 
-@REM python -m pip install SpeechRecognition
-@REM python -m pip install pocketsphinx
-@REM python -m pip install soundfile
-@REM python -m pip install edge-tts
-@REM python -m pip install sounddevice
-@REM python -m pip install git+https://github.com/openai/whisper.git 
+python -m pip install SpeechRecognition
+python -m pip install pocketsphinx
+python -m pip install soundfile
+python -m pip install edge-tts
+python -m pip install sounddevice
+python -m pip install git+https://github.com/openai/whisper.git 
 
 cls
 
