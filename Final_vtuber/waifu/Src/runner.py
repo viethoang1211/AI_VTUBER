@@ -363,21 +363,56 @@ if  __name__ == "__main__":
                 else:
                     utils.characterAi.send_message_to_process_via_websocket(transcript)
                     semaphore.acquire()
-            elif any(word in ["sing"] for word in words):
-                word_index = words.index("sing")
+            elif any(word in ["sing","cover"] for word in words):
+                word_index = words.index("sing") if "sing" in words else words.index("cover")
                 song = ' '.join(words[word_index+1:])
                 if "count on me" in song:
                     asyncio.run(character_replied("okie"))
                     time.sleep(2)
-                    utils.audio.play_wav('song/countonme_yuka.wav', utils.vtube_studio.set_audio_level)
+                    utils.audio.play_wav('song/countonme_ariana.wav', utils.vtube_studio.set_audio_level)
                     utils.vtube_studio.set_audio_level(0)
                     pass
                 elif "jingle bell" in song:
                     pass
+                elif ("go to return" in song) and ("vietnamese" or "vietnam" in song):
+                    asyncio.run(character_replied("Go to return"))
+                    time.sleep(2)
+                    utils.audio.play_wav('song/didetrove.wav', utils.vtube_studio.set_audio_level)
+                    utils.vtube_studio.set_audio_level(0)
                 elif "happy birthday" in song:
                     asyncio.run(character_replied("okie"))
                     time.sleep(2)
-                    utils.audio.play_wav('song/happybirthday_yuka.wav', utils.vtube_studio.set_audio_level)
+                    utils.audio.play_wav('song/hpbd_ariana.wav', utils.vtube_studio.set_audio_level)
+                    utils.vtube_studio.set_audio_level(0)
+                elif ( "counting the days away from you" in song or "counting the days without you" in song) and ("vietnamese" or "vietnam" in song) :
+                    asyncio.run(character_replied("I love that Vietnamese song, here you are"))
+                    time.sleep(2)
+                    utils.audio.play_wav('song/demngayxaem_ariana.wav', utils.vtube_studio.set_audio_level)
+                    utils.vtube_studio.set_audio_level(0)
+                elif ("someone else's wife" in song or "wife of someone else" in song) and ("vietnamese" or "vietnam" in song) :
+                    asyncio.run(character_replied("this song is a bit difficult to sing."))
+                    time.sleep(2)
+                    utils.audio.play_wav('song/vonguoita_miku.wav', utils.vtube_studio.set_audio_level)
+                    utils.vtube_studio.set_audio_level(0)
+                elif "sorry" in song and ("vietnamese" or "vietnam" in song):
+                    asyncio.run(character_replied("sorry"))
+                    time.sleep(2)
+                    utils.audio.play_wav('song/sorry_ariana.wav', utils.vtube_studio.set_audio_level)
+                    utils.vtube_studio.set_audio_level(0)
+                elif "happy birthday" in song:
+                    asyncio.run(character_replied("happy birthday"))
+                    time.sleep(2)
+                    utils.audio.play_wav('song/hpbd_ariana.wav', utils.vtube_studio.set_audio_level)
+                    utils.vtube_studio.set_audio_level(0)
+                elif "heal the world" in song:
+                    asyncio.run(character_replied("okie"))
+                    time.sleep(2)
+                    utils.audio.play_wav('song/healtheworld_ariana.wav', utils.vtube_studio.set_audio_level)
+                    utils.vtube_studio.set_audio_level(0)
+                elif "perfect" in song:
+                    asyncio.run(character_replied("okie"))
+                    time.sleep(2)
+                    utils.audio.play_wav('song/perfect_ariana.wav', utils.vtube_studio.set_audio_level)
                     utils.vtube_studio.set_audio_level(0)
                 else:
                     utils.characterAi.send_message_to_process_via_websocket(transcript)
