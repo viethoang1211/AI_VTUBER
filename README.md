@@ -8,3 +8,5 @@ Near future Todo list:
 + Modify walkthrough file
 
 
+<!--  Note -->
++ Vì lúc output âm thanh, máy sẽ nhận làm giọng cho mic nên hiện tại chưa tách mic và speaker thành 2 luồng được
