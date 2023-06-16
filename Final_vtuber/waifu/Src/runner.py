@@ -289,7 +289,16 @@ def preparation_1():
         time.sleep(1)
         semaphore_yt.release()
 
+
+# for drawing
+from opengpt import OpenGPT
+import requests
+from PIL import Image
+import io
+
 # end function
+
+
 
 if  __name__ == "__main__":
 
@@ -344,19 +353,19 @@ if  __name__ == "__main__":
                 # print(app)
 
                 if app == "youtube":
-                    character_replied("okie")
+                    asyncio.run(character_replied("okie"))
                     semaphore.acquire()
                     webbrowser.open("https://www.youtube.com/")
                 elif app == "facebook":
-                    character_replied("okie")
+                    asyncio.run(character_replied("okie"))
                     semaphore.acquire()
                     webbrowser.open("https://www.facebook.com/")
                 elif app == "github":
-                    character_replied("okie")
+                    asyncio.run(character_replied("okie"))
                     semaphore.acquire()
                     webbrowser.open("https://www.github.com/")
                 elif app== "code":
-                    character_replied("okie")
+                    asyncio.run(character_replied("okie"))
                     semaphore.acquire()
                     os.startfile(r"C:\Users\ADMIN\AppData\Local\Programs\Microsoft VS Code\Code.exe")
                 # implement whatever you want here
@@ -368,6 +377,7 @@ if  __name__ == "__main__":
                 song = ' '.join(words[word_index+1:])
                 if "count on me" in song:
                     asyncio.run(character_replied("okie"))
+                    semaphore.acquire()
                     time.sleep(2)
                     utils.audio.play_wav('song/countonme_ariana.wav', utils.vtube_studio.set_audio_level)
                     utils.vtube_studio.set_audio_level(0)
@@ -376,43 +386,45 @@ if  __name__ == "__main__":
                     pass
                 elif ("go to return" in song) and ("vietnamese" or "vietnam" in song):
                     asyncio.run(character_replied("Go to return"))
+                    semaphore.acquire()
                     time.sleep(2)
-                    utils.audio.play_wav('song/didetrove.wav', utils.vtube_studio.set_audio_level)
+                    utils.audio.play_wav('song/didetrove_ariana.wav', utils.vtube_studio.set_audio_level)
                     utils.vtube_studio.set_audio_level(0)
                 elif "happy birthday" in song:
                     asyncio.run(character_replied("okie"))
+                    semaphore.acquire()
                     time.sleep(2)
                     utils.audio.play_wav('song/hpbd_ariana.wav', utils.vtube_studio.set_audio_level)
                     utils.vtube_studio.set_audio_level(0)
                 elif ( "counting the days away from you" in song or "counting the days without you" in song) and ("vietnamese" or "vietnam" in song) :
                     asyncio.run(character_replied("I love that Vietnamese song, here you are"))
+                    semaphore.acquire()
                     time.sleep(2)
                     utils.audio.play_wav('song/demngayxaem_ariana.wav', utils.vtube_studio.set_audio_level)
                     utils.vtube_studio.set_audio_level(0)
                 elif ("someone else's wife" in song or "wife of someone else" in song) and ("vietnamese" or "vietnam" in song) :
                     asyncio.run(character_replied("this song is a bit difficult to sing."))
+                    semaphore.acquire()
                     time.sleep(2)
                     utils.audio.play_wav('song/vonguoita_miku.wav', utils.vtube_studio.set_audio_level)
                     utils.vtube_studio.set_audio_level(0)
                 elif "sorry" in song and ("vietnamese" or "vietnam" in song):
                     asyncio.run(character_replied("sorry"))
+                    semaphore.acquire()
                     time.sleep(2)
-                    utils.audio.play_wav('song/sorry_ariana.wav', utils.vtube_studio.set_audio_level)
-                    utils.vtube_studio.set_audio_level(0)
-                elif "happy birthday" in song:
-                    asyncio.run(character_replied("happy birthday"))
-                    time.sleep(2)
-                    utils.audio.play_wav('song/hpbd_ariana.wav', utils.vtube_studio.set_audio_level)
+                    utils.audio.play_wav('song/xinloi_ariana.wav', utils.vtube_studio.set_audio_level)
                     utils.vtube_studio.set_audio_level(0)
                 elif "heal the world" in song:
                     asyncio.run(character_replied("okie"))
+                    semaphore.acquire()
                     time.sleep(2)
                     utils.audio.play_wav('song/healtheworld_ariana.wav', utils.vtube_studio.set_audio_level)
                     utils.vtube_studio.set_audio_level(0)
                 elif "perfect" in song:
                     asyncio.run(character_replied("okie"))
+                    semaphore.acquire()
                     time.sleep(2)
-                    utils.audio.play_wav('song/perfect_ariana.wav', utils.vtube_studio.set_audio_level)
+                    utils.audio.play_wav('song/perfect_rose.wav', utils.vtube_studio.set_audio_level)
                     utils.vtube_studio.set_audio_level(0)
                 else:
                     utils.characterAi.send_message_to_process_via_websocket(transcript)
@@ -423,12 +435,32 @@ if  __name__ == "__main__":
                 song = words[word_index+1]
                 if song =="god":
                     asyncio.run(character_replied("rap god"))
+                    semaphore.acquire()
                     time.sleep(1)
                     utils.audio.play_wav('song/rapgod_yuka.wav', utils.vtube_studio.set_audio_level)
                     utils.vtube_studio.set_audio_level(0)
                 else:
                     utils.characterAi.send_message_to_process_via_websocket(transcript)
                     semaphore.acquire()
+            elif any(word in ["draw"] for word in words):
+                # print("read")
+                asyncio.run(character_replied("I'm drawing"))
+                semaphore.acquire()
+
+                word_index = words.index("draw")
+                picture = ' '.join(words[word_index+1:])
+                hotpot = OpenGPT(provider="hotpot", type="image", options={"style": "Hotpot Art 9"})
+                tem_link= hotpot.Generate(picture).url
+                response =requests.get(tem_link)
+                if response.status_code==200:
+                    asyncio.run(character_replied("Here you are"))
+                    semaphore.acquire()
+
+                    image = Image.open(io.BytesIO(response.content))
+                    image.save("tem.png")
+                    os.startfile("tem.png")
+                else:
+                    print("Error:", response.status_code)
             else:    
                 utils.characterAi.send_message_to_process_via_websocket(transcript)
                 semaphore.acquire()
