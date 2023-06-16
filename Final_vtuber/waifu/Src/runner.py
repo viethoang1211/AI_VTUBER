@@ -3,6 +3,23 @@ import openai, humanize, os, sys, time, threading, asyncio, signal, json, webbro
 from rich.console import Console
 import whisper
 
+
+import gpt3
+
+# while True:
+#     prompt = input("👦 > ")
+#     try:
+#         # Remove the 'proxy' variable and the 'proxies' parameter if you don't want to use a proxy.
+#         # proxy = "Your proxies IP"
+#         resp = gpt3.Completion.create(prompt=prompt, chat=[])
+#         print(f"🤖 > {str(resp['text'])}")
+#     except Exception as e:
+#         print(f"🤖 > {str(e)}")
+
+test_prompt = "hello how are you"
+resp = gpt3.Completion.create(prompt=test_prompt, chat=[])
+print(f"🤖 > {str(resp['text'])}")
+
 # If user didn't rename example.env
 if os.path.exists("example.env") and not os.path.exists(".env"):
     os.rename("example.env", ".env")
