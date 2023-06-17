@@ -7,6 +7,8 @@ NODE = "node"
 
 CHARACTERAI_PORT = 40102
 
+HAS_OPENAI = os.environ.get("OPENAI_CHECK")
+
 TEMP_FILE = "voicevox.tmp"
 
 FFMPEG_DIRECT_LINK = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip"
@@ -61,11 +63,11 @@ def start_check(voice):
                 with zipfile.ZipFile(TEMP_FILE) as archive, open(i, "wb") as f:
                     f.write(archive.read(f"ffmpeg-master-latest-win64-gpl/bin/{i}"))
 
-
-required_variables = ["CHARACTERAI_CHARACTER", "OPENAI_KEY", "TORCH_DEVICE", "VOICE"]
-
+if HAS_OPENAI:
+    required_variables = ["CHARACTERAI_CHARACTER", "OPENAI_KEY", "TORCH_DEVICE", "VOICE"]
+else:
 # for non openai key
-# required_variables = ["CHARACTERAI_CHARACTER", "TORCH_DEVICE", "VOICE"]
+    required_variables = ["CHARACTERAI_CHARACTER", "TORCH_DEVICE", "VOICE"]
 
 # Check variables
 for i in required_variables:

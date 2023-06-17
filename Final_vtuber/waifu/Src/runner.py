@@ -6,6 +6,9 @@ import whisper
 
 import gpt3
 
+# In test mode
+CHARACTERAI_TURN_OFF =os.environ.get('CHARACTERAI_TURN_OFF')
+initialized_prompt=""
 # while True:
 #     prompt = input("👦 > ")
 #     try:
@@ -16,9 +19,12 @@ import gpt3
 #     except Exception as e:
 #         print(f"🤖 > {str(e)}")
 
-test_prompt = "hello how are you"
-resp = gpt3.Completion.create(prompt=test_prompt, chat=[])
-print(f"🤖 > {str(resp['text'])}")
+# test_prompt = "you are my best friend, how would you greet me?"
+# resp = gpt3.Completion.create(prompt=test_prompt, chat=[])
+# print(f"🤖 > {str(resp['text'])}")
+
+# initialized_prompt= "You are an anime cat girl, you are cute, adorable, respond in lovely manner, now you will respond to my message: "
+
 
 # If user didn't rename example.env
 if os.path.exists("example.env") and not os.path.exists(".env"):
@@ -219,10 +225,11 @@ semaphore1 = threading.Semaphore(1)
 speech=""
 speech_now=""
 speech_prev=""
+HAS_OPENAI= os.environ.get('OPENAI_CHECK')
 
 def listen_and_respond():
     # Create a recognizer object
-    global speech 
+    global speech , HAS_OPENAI
     r = sr.Recognizer()
     r.energy_threshold = 3000
     
@@ -254,17 +261,19 @@ def listen_and_respond():
             # print("I heard that.")
             
             # for openai key 
-            audio_file= open("temp.wav", "rb")
-            trans = openai.Audio.transcribe(
-                model="whisper-1",
-                file=audio_file,
-                temperature=0.1,
-                language="en"
-            )
 
+            if HAS_OPENAI:
+                audio_file= open("temp.wav", "rb")
+                trans = openai.Audio.transcribe(
+                    model="whisper-1",
+                    file=audio_file,
+                    temperature=0.1,
+                    language="en"
+                )
+            else:
             # for non openai key
-            # result = utils.transcriber.audio_model.transcribe("temp.wav", fp16=torch.cuda.is_available())
-            # trans = result['text'].strip()
+                result = utils.transcriber.audio_model.transcribe("temp.wav", fp16=torch.cuda.is_available())
+                trans = result['text'].strip()
 
 
             if len(trans['text']) <=15:
@@ -319,6 +328,10 @@ import io
 
 if  __name__ == "__main__":
 
+    if CHARACTERAI_TURN_OFF ==True:
+        initialized_prompt= "You are an anime cat girl, you are cute, adorable, respond in lovely manner, now you will respond to my message: "
+    else:
+        initialized_prompt= ""
     mode = input("Mode (1-Mic, 2-Youtube Live, 3-Live and listen): ")
 
     if mode =="1":
@@ -353,6 +366,10 @@ if  __name__ == "__main__":
             print("\rYou" + Fore.GREEN + Style.BRIGHT + " (mic) " + Fore.RESET + "> ", end="", flush=True)
 
             # print("gotta check here..."+"\n")
+            # print(f"{transcript.strip()}")    
+            
+            if transcript is None:
+                continue
             print(f"{transcript.strip()}")    
 
             words= transcript.strip()
@@ -389,6 +406,8 @@ if  __name__ == "__main__":
                 else:
                     utils.characterAi.send_message_to_process_via_websocket(transcript)
                     semaphore.acquire()
+                    
+                        
             elif any(word in ["sing","cover"] for word in words):
                 word_index = words.index("sing") if "sing" in words else words.index("cover")
                 song = ' '.join(words[word_index+1:])
@@ -472,7 +491,6 @@ if  __name__ == "__main__":
                 if response.status_code==200:
                     asyncio.run(character_replied("Here you are"))
                     semaphore.acquire()
-
                     image = Image.open(io.BytesIO(response.content))
                     image.save("tem.png")
                     os.startfile("tem.png")
