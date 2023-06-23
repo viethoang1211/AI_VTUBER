@@ -4,7 +4,7 @@ Final vtuber
 
 Near future Todo list:
 + Modify walkthrough file
-# exception when character AI overload 
+---- exception when character AI overload 
 + Ở mode 2, thêm 1 luồng cho draw
 + Sử dụng vectorDB để lưu dữ liệu chat
 + Tạo queue để lưu chat thay vì bỏ qua như hiện tại
